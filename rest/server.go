@@ -30,10 +30,9 @@ func (s *Server) setupRouter() {
 
 	s.router = router
 
-	router.POST("/api/users", s.createUser)
-	router.GET("/api/users/:id", s.getUser)
-	router.PATCH("/api/users/:id", s.updateUser)
-	router.DELETE("/api/users/:id", s.deleteUser)
+	userRouter := router.Group("/api")
+
+	ServeUserRoutes(userRouter, s)
 }
 
 func (s *Server) Start() error {

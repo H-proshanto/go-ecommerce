@@ -2,31 +2,12 @@ package rest
 
 import (
 	"encoding/json"
+	"go-rest/dto"
 	"go-rest/svc"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
-
-func (s *Server) getUser(ctx *gin.Context) {
-	userId := ctx.Param("id")
-
-	user, err := s.svc.GetUser(userId)
-
-	if err != nil {
-		ctx.JSON(err.StatusCode, gin.H{"error": err.Message})
-		return
-	}
-
-	ctx.JSON(
-		http.StatusOK,
-		gin.H{
-			"data":    user,
-			"success": true,
-			"message": "User retrieved",
-		},
-	)
-}
 
 func (s *Server) createUser(ctx *gin.Context) {
 	var user svc.User
@@ -42,7 +23,13 @@ func (s *Server) createUser(ctx *gin.Context) {
 		return
 	}
 
-	message, responseError := s.svc.CreateUser(&user)
+	response, responseError := s.svc.CreateUser(
+		&dto.UserRequestBody{
+			Email:     user.Email,
+			FirstName: user.FirstName,
+			LastName:  user.LastName,
+		},
+	)
 
 	if responseError != nil {
 		ctx.JSON(responseError.StatusCode, gin.H{"error": responseError.Message})
@@ -52,8 +39,26 @@ func (s *Server) createUser(ctx *gin.Context) {
 	ctx.JSON(
 		http.StatusOK,
 		gin.H{
-			"success": true,
-			"message": message,
+			"message": response,
+		},
+	)
+}
+
+func (s *Server) getUser(ctx *gin.Context) {
+	userId := ctx.Param("id")
+
+	response, responseError := s.svc.GetUser(&dto.UserRequestBody{ID: userId})
+
+	if responseError != nil {
+		ctx.JSON(responseError.StatusCode, gin.H{"error": responseError.Message})
+		return
+	}
+
+	ctx.JSON(
+		http.StatusOK,
+		gin.H{
+			"data":    response,
+			"message": "User retrieved",
 		},
 	)
 }
@@ -74,7 +79,14 @@ func (s *Server) updateUser(ctx *gin.Context) {
 		return
 	}
 
-	updatedUser, responseError := s.svc.UpdateUser(userId, &user)
+	response, responseError := s.svc.UpdateUser(
+		&dto.UserRequestBody{
+			ID:        userId,
+			Email:     user.Email,
+			FirstName: user.FirstName,
+			LastName:  user.LastName,
+		},
+	)
 
 	if responseError != nil {
 		ctx.JSON(responseError.StatusCode, gin.H{"error": responseError.Message})
@@ -84,8 +96,7 @@ func (s *Server) updateUser(ctx *gin.Context) {
 	ctx.JSON(
 		http.StatusOK,
 		gin.H{
-			"data":    updatedUser,
-			"success": true,
+			"data":    response,
 			"message": "Updated Successfully",
 		},
 	)
@@ -94,18 +105,19 @@ func (s *Server) updateUser(ctx *gin.Context) {
 func (s *Server) deleteUser(ctx *gin.Context) {
 	userId := ctx.Param("id")
 
-	message, err := s.svc.DeleteUser(userId)
+	response, responseError := s.svc.DeleteUser(&dto.UserRequestBody{
+		ID: userId,
+	})
 
-	if err != nil {
-		ctx.JSON(err.StatusCode, gin.H{"error": err.Message})
+	if responseError != nil {
+		ctx.JSON(responseError.StatusCode, gin.H{"error": responseError.Message})
 		return
 	}
 
 	ctx.JSON(
 		http.StatusOK,
 		gin.H{
-			"success": true,
-			"message": message,
+			"message": response,
 		},
 	)
 }

@@ -2,6 +2,7 @@ package repo
 
 import (
 	"fmt"
+	"go-rest/dto"
 	"go-rest/svc"
 	"go-rest/utils"
 	"net/http"
@@ -24,7 +25,13 @@ func NewUserRepo(db *gorm.DB) UserRepo {
 	}
 }
 
-func (r *userRepo) CreateUser(user *svc.User) (string, *utils.ServerError) {
+func (r *userRepo) CreateUser(req *dto.UserRequestBody) (string, *utils.ServerError) {
+	user := svc.User{
+		FirstName: req.FirstName,
+		LastName:  req.LastName,
+		Email:     req.Email,
+	}
+
 	result := r.db.Create(&user)
 
 	if result.Error != nil {
@@ -38,9 +45,10 @@ func (r *userRepo) CreateUser(user *svc.User) (string, *utils.ServerError) {
 	return "Created Succesfully", nil
 }
 
-func (r *userRepo) GetUser(id string) (*svc.User, *utils.ServerError) {
+func (r *userRepo) GetUser(req *dto.UserRequestBody) (*dto.UserResponseBody, *utils.ServerError) {
 	var user *svc.User
 
+	id := req.ID
 	result := r.db.Where(fmt.Sprintf("id = %s", id)).First(&user)
 	if result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
@@ -59,13 +67,21 @@ func (r *userRepo) GetUser(id string) (*svc.User, *utils.ServerError) {
 	}
 
 	user.Password = ""
-	return user, nil
+	return &dto.UserResponseBody{
+		ID:        user.ID,
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
+		Email:     user.Email,
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: user.UpdatedAt,
+	}, nil
 }
 
-func (r *userRepo) UpdateUser(id string, newUser *svc.User) (*svc.User, *utils.ServerError) {
+func (r *userRepo) UpdateUser(req *dto.UserRequestBody) (*dto.UserResponseBody, *utils.ServerError) {
 	var user *svc.User
-	result := r.db.Where(fmt.Sprintf("id = %s", id)).First(&user)
 
+	id := req.ID
+	result := r.db.Where(fmt.Sprintf("id = %s", id)).First(&user)
 	if result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
 			fmt.Println("User not found")
@@ -82,16 +98,16 @@ func (r *userRepo) UpdateUser(id string, newUser *svc.User) (*svc.User, *utils.S
 		}
 	}
 
-	if newUser.FirstName != "" {
-		user.FirstName = newUser.FirstName
+	if req.FirstName != "" {
+		user.FirstName = req.FirstName
 	}
 
-	if newUser.LastName != "" {
-		user.LastName = newUser.LastName
+	if req.LastName != "" {
+		user.LastName = req.LastName
 	}
 
-	if newUser.Email != "" {
-		user.Email = newUser.Email
+	if req.Email != "" {
+		user.Email = req.Email
 	}
 
 	user.UpdatedAt = time.Now()
@@ -100,11 +116,19 @@ func (r *userRepo) UpdateUser(id string, newUser *svc.User) (*svc.User, *utils.S
 
 	user.Password = ""
 
-	return user, nil
+	return &dto.UserResponseBody{
+		ID:        user.ID,
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
+		Email:     user.Email,
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: user.UpdatedAt,
+	}, nil
 }
 
-func (r *userRepo) DeleteUser(id string) (string, *utils.ServerError) {
+func (r *userRepo) DeleteUser(req *dto.UserRequestBody) (string, *utils.ServerError) {
 	var user *svc.User
+	id := req.ID
 	result := r.db.Where(fmt.Sprintf("id = %s", id)).First(&user)
 
 	if result.Error != nil {

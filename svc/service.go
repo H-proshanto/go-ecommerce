@@ -1,6 +1,9 @@
 package svc
 
-import "go-rest/utils"
+import (
+	"go-rest/dto"
+	"go-rest/utils"
+)
 
 type service struct {
 	userRepo UserRepo
@@ -12,18 +15,18 @@ func NewService(userRepo UserRepo) Service {
 	}
 }
 
-func (s *service) GetUser(id string) (*User, *utils.ServerError) {
-	return s.userRepo.GetUser(id)
+func (s *service) CreateUser(req *dto.UserRequestBody) (string, *utils.ServerError) {
+	return s.userRepo.CreateUser(req)
 }
 
-func (s *service) CreateUser(user *User) (string, *utils.ServerError) {
-	return s.userRepo.CreateUser(user)
+func (s *service) GetUser(req *dto.UserRequestBody) (*dto.UserResponseBody, *utils.ServerError) {
+	return s.userRepo.GetUser(req)
 }
 
-func (s *service) UpdateUser(id string, user *User) (*User, *utils.ServerError) {
-	return s.userRepo.UpdateUser(id, user)
+func (s *service) UpdateUser(req *dto.UserRequestBody) (*dto.UserResponseBody, *utils.ServerError) {
+	return s.userRepo.UpdateUser(req)
 }
 
-func (s *service) DeleteUser(id string) (string, *utils.ServerError) {
-	return s.userRepo.DeleteUser(id)
+func (s *service) DeleteUser(req *dto.UserRequestBody) (string, *utils.ServerError) {
+	return s.userRepo.DeleteUser(req)
 }
