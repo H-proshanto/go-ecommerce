@@ -28,6 +28,7 @@ func (s *Server) createUser(ctx *gin.Context) {
 			Email:     user.Email,
 			FirstName: user.FirstName,
 			LastName:  user.LastName,
+			Password:  user.Password,
 		},
 	)
 

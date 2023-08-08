@@ -26,10 +26,20 @@ func NewUserRepo(db *gorm.DB) UserRepo {
 }
 
 func (r *userRepo) CreateUser(req *dto.UserRequestBody) (string, *utils.ServerError) {
-	user := svc.User{
+	user := &svc.User{
 		FirstName: req.FirstName,
 		LastName:  req.LastName,
 		Email:     req.Email,
+		Password:  req.Password,
+	}
+
+	user.TrimStrings()
+	err := user.HashPassword()
+	if err != nil {
+		return "", &utils.ServerError{
+			Message:    "something occured",
+			StatusCode: http.StatusInternalServerError,
+		}
 	}
 
 	result := r.db.Create(&user)
@@ -66,7 +76,6 @@ func (r *userRepo) GetUser(req *dto.UserRequestBody) (*dto.UserResponseBody, *ut
 		}
 	}
 
-	user.Password = ""
 	return &dto.UserResponseBody{
 		ID:        user.ID,
 		FirstName: user.FirstName,
@@ -113,8 +122,6 @@ func (r *userRepo) UpdateUser(req *dto.UserRequestBody) (*dto.UserResponseBody, 
 	user.UpdatedAt = time.Now()
 
 	r.db.Save(&user)
-
-	user.Password = ""
 
 	return &dto.UserResponseBody{
 		ID:        user.ID,
